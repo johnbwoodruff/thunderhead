@@ -1,0 +1,60 @@
+# CLI command to create
+# aws cloudformation create-stack --stack-name thunderhead-vanilla --template-body file://./original-template.yml --capabilities CAPABILITY_NAMED_IAM
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Example AWS CloudFormation Template
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: thunderhead-original-bucket
+  LambdaRole: # Auto-generate this entire resource
+    Type: AWS::IAM::Role
+    Properties: 
+      RoleName: thunderhead-original-function
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+              - "lambda.amazonaws.com" 
+            Action: 
+            - "sts:AssumeRole"
+      Path: /services/
+  LambdaPolicy: # Auto-generate this entire resource
+    Type: "AWS::IAM::Policy"
+    Properties: 
+      PolicyName: thunderhead-original-function
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - Effect: "Allow"
+            Action: "cloudwatch:*"
+            Resource: "*"
+          - Effect: "Allow"
+            Action: "s3:*"
+            Resource: !GetAtt S3Bucket.Arn
+      Roles: 
+        - !Ref LambdaRole
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Code:
+        ZipFile: !Sub |
+          def handler(event,context):
+              print("Hello")
+      Description: Thunderhead Example Function
+      FunctionName: thunderhead-original-function
+      Handler: index.handler
+      MemorySize: 128
+      ReservedConcurrentExecutions: 1
+      Role: !GetAtt LambdaRole.Arn # TODO - This should be replaced
+      Runtime: python3.6
+      Timeout: 60
+
+Outputs:
+  DomainName:
+    Description: S3 bucket URL
+    Value: !GetAtt S3Bucket.DomainName

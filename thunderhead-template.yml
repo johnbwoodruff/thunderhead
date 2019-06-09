@@ -1,0 +1,35 @@
+# CLI command to create
+# aws cloudformation create-stack --stack-name thunderhead-vanilla --template-body file://./original-template.yml --capabilities CAPABILITY_NAMED_IAM
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Example AWS CloudFormation Template
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: thunderhead-original-bucket
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      Code:
+        ZipFile: !Sub |
+          def handler(event,context):
+              print("Hello")
+      Description: Thunderhead Example Function
+      FunctionName: thunderhead-original-function
+      Handler: index.handler
+      MemorySize: 128
+      ReservedConcurrentExecutions: 1
+      # Replaces 'Role', possibly other things
+      # Each resource needs to understand not only what dependencies output, but also what it needs to add
+      #   For example, the created policy needs CloudWatch permissions to run the Lambda
+      Dependencies: 
+      - S3Bucket
+      Runtime: python3.6
+      Timeout: 60
+
+Outputs:
+  DomainName:
+    Description: S3 bucket URL
+    Value: !GetAtt S3Bucket.DomainName
