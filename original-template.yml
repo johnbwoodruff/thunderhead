@@ -38,6 +38,11 @@ Resources:
             Resource: !GetAtt S3Bucket.Arn
       Roles: 
         - !Ref LambdaRole
+  LambdaSg:
+    Type: "AWS::EC2::SecurityGroup"
+    GroupName: thunderhead-original-function
+    GroupDescription: Security group for thunderhead-original-function lambda
+    VpcId: MyFakeVpcId # TODO - Need to abstract away the concept of a VPC. Should be referencable by a VPC resource in the template directly or passed in from the outside
   Lambda:
     Type: AWS::Lambda::Function
     Properties: 
@@ -53,6 +58,11 @@ Resources:
       Role: !GetAtt LambdaRole.Arn # TODO - This should be replaced
       Runtime: python3.6
       Timeout: 60
+      VpcConfig:
+        SecurityGroupIds:
+        - !Ref LambdaSg
+        SubnetIds:
+        - subnet-10912 # TODO - Need to abstract this away too. Should be referencable by a VPC resource in the template or passed in from elsewhere
 
 Outputs:
   DomainName:
