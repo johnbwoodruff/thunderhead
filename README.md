@@ -1,4 +1,5 @@
-# Thunderhead
+<p align="center"><img width="300" src="./thunderhead.png" alt="thunderhead logo"></p>
+
 Thunderously productive CloudFormation
 
 # What is this supposed to be?
